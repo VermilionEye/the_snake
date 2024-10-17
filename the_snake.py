@@ -212,9 +212,7 @@ def draw_info_bar(snake_length, current_speed):
 
 
 def change_title(snake_length):
-    """
-    Обновляет заголовок окна с рекордом.
-    """
+    """Обновляет заголовок окна с рекордом."""
     high_score = load_high_score()
     if snake_length > high_score:
         save_high_score(snake_length)
