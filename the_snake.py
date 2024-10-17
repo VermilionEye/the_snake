@@ -6,6 +6,10 @@ HIGH_SCORE_FILE = 'highscore.txt'
 
 
 def load_high_score():
+    """
+    Загружает рекорд из файла, возвращает 0,
+    если файл не существует или пуст.
+    """
     if os.path.exists(HIGH_SCORE_FILE):
         with open(HIGH_SCORE_FILE, 'r') as file:
             try:
@@ -16,6 +20,7 @@ def load_high_score():
 
 
 def save_high_score(score):
+    """Сохраняет рекорд в файл highscore.txt."""
     with open(HIGH_SCORE_FILE, 'w') as file:
         file.write(str(score))
 
@@ -56,59 +61,73 @@ font = pygame.font.SysFont('Arial', 24)
 
 
 def get_available_positions(snake_positions):
+    """
+    Возвращает множество свободных позиций на поле,
+    исключая занятые телом змеи.
+    """
     return ALL_CELLS - set(snake_positions)
 
 
 class GameObject:
+    """Базовый класс для всех объектов игры."""
 
     def __init__(self, position=(0, 0), color=(255, 255, 255)):
         self.position = position
         self.body_color = color
 
     def draw(self):
+        """Отрисовка объекта на текущей позиции."""
         self.draw_at_position(self.position, self.body_color)
 
     @staticmethod
     def draw_at_position(position, color):
+        """Отрисовка объекта на позиции."""
         rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
 
 class Apple(GameObject):
+    """Класс для яблока."""
 
     def __init__(self, snake_positions=[]):
         self.randomize_position(snake_positions)
         super().__init__(self.position, APPLE_COLOR)
 
     def randomize_position(self, snake_positions):
+        """Генерация случайной позиции для яблока."""
         available_positions = get_available_positions(snake_positions)
         self.position = choice(list(available_positions))
 
 
 class BadFood(GameObject):
+    """Класс для плохой еды."""
 
     def __init__(self, snake_positions=[]):
         self.randomize_position(snake_positions)
         super().__init__(self.position, BAD_FOOD_COLOR)
 
     def randomize_position(self, snake_positions):
+        """Генерация случайной позиции для плохой еды."""
         available_positions = get_available_positions(snake_positions)
         self.position = choice(list(available_positions))
 
 
 class Obstacle(GameObject):
+    """Класс для препятствий."""
 
     def __init__(self, snake_positions=[]):
         self.randomize_position(snake_positions)
         super().__init__(self.position, OBSTACLE_COLOR)
 
     def randomize_position(self, snake_positions):
+        """Генерация случайной позиции для препятствия."""
         available_positions = get_available_positions(snake_positions)
         self.position = choice(list(available_positions))
 
 
 class Snake(GameObject):
+    """Класс змейки, наследующийся от GameObject."""
 
     def __init__(self):
         self.length = 1
@@ -119,14 +138,17 @@ class Snake(GameObject):
         super().__init__(self.positions[0], SNAKE_COLOR)
 
     def get_head_position(self):
+        """Возвращает позицию головы змейки."""
         return self.positions[0]
 
     def update_direction(self):
+        """Обновляет направление движения змейки."""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
     def move(self):
+        """Двигает змейку в соответствии с текущим направлением."""
         cur = self.get_head_position()
         x, y = self.direction
         new = ((cur[0] + (x * GRID_SIZE)) % SCREEN_WIDTH,
@@ -144,14 +166,17 @@ class Snake(GameObject):
         self.position = self.positions[0]
 
     def reset(self):
+        """Сброс состояния змейки при столкновении с собой или препятствием."""
         self.__init__()
 
     def draw(self):
+        """Отрисовывает змейку на поле."""
         for position in self.positions:
             GameObject.draw_at_position(position, self.body_color)
 
 
 def handle_keys(snake, current_speed):
+    """Обрабатывает нажатия клавиш."""
     direction_map = {
         pygame.K_UP: UP,
         pygame.K_DOWN: DOWN,
@@ -179,6 +204,7 @@ def handle_keys(snake, current_speed):
 
 
 def draw_info_bar(snake_length, current_speed):
+    """Отрисовывает строку над игровым полем."""
     text = f"Length: {snake_length} | Speed: {current_speed}"
     info_surface = font.render(text, True, INFO_TEXT_COLOR)
     screen.fill((0, 0, 0), (0, 0, SCREEN_WIDTH, INFO_BAR_HEIGHT))
@@ -186,6 +212,9 @@ def draw_info_bar(snake_length, current_speed):
 
 
 def change_title(snake_length):
+    """
+    Обновляет заголовок окна с рекордом.
+    """
     high_score = load_high_score()
     if snake_length > high_score:
         save_high_score(snake_length)
@@ -195,6 +224,7 @@ def change_title(snake_length):
 
 
 def main():
+    """Логика игры."""
     pygame.init()
 
     snake = Snake()
